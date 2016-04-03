@@ -1,0 +1,14 @@
+[
+	{
+		"firstname": "John",
+		"lastname": "Doe",
+		"email": "john.doe@tu-dortmund.de",
+		"sex": "male"
+	},
+	{
+		"firstname": "Jane",
+		"lastname": "Doe",
+		"email": "jane.doe@tu-dortmund.de",
+		"sex": "femneale"
+	}
+]
