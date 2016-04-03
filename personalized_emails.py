@@ -58,7 +58,10 @@ def build_mail(recipient, metadata, markdown, attachments=None):
 
     mail = MIMEMultipart()
     mail['Subject'] = metadata['subject']
-    mail['From'] = metadata.get('author', 'PeP et al. e.V.')
+    mail['From'] = '{} <{}>'.format(
+        metadata.get('author', 'PeP et al. e.V.'),
+        metadata.get('author_email', 'kontakt@pep-dortmund.org'),
+    )
     mail['To'] = recipient.email
 
     msg = MIMEMultipart('alternative')
@@ -121,7 +124,10 @@ def main():
         mail = build_mail(recipient, metadata, markdown, attachments)
 
         mail_server.sendmail(
-            metadata.get('author_email', 'kontakt@pep-dortmund.org'),
+            '{} <{}>'.format(
+                metadata.get('author', 'PeP et al. e.V.'),
+                metadata.get('author_email', 'kontakt@pep-dortmund.org'),
+            ),
             recipient.email,
             mail.as_string(),
         )
