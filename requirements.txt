@@ -1,0 +1,5 @@
+pandas>=0.17.1
+gfm
+python-frontmatter
+jinja2
+docopt
