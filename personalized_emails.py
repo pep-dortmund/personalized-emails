@@ -24,6 +24,7 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.image import MIMEImage
 from email import encoders
+import logging
 
 
 def read_database(inputfile, **kwargs):
@@ -103,7 +104,24 @@ def build_mail(recipient, metadata, markdown, attachments=None):
     return mail
 
 
+def send_message(recipient, metadata, template, mail_server):
+    markdown = template.render(recipient=recipient)
+    attachments = metadata.get('attachments')
+    mail = build_mail(recipient, metadata, markdown, attachments)
+
+    mail_server.sendmail(
+        '{} <{}>'.format(
+            metadata.get('author', 'PeP et al. e.V.'),
+            metadata.get('author_email', 'kontakt@pep-dortmund.org'),
+        ),
+        recipient.email,
+        mail.as_string(),
+    )
+    logging.info('Send mail to {}'.format(recipient.email))
+
+
 def main():
+    logging.basicConfig(level=logging.INFO)
     args = docopt(__doc__, version='PeP et Al. emails v0.0.1')
     database = read_database(args['<database>'])
 
@@ -117,20 +135,7 @@ def main():
     template, metadata = parse_template(args['<template>'])
 
     for recipient in database.itertuples():
-
-        markdown = template.render(recipient=recipient)
-
-        attachments = metadata.get('attachments')
-        mail = build_mail(recipient, metadata, markdown, attachments)
-
-        mail_server.sendmail(
-            '{} <{}>'.format(
-                metadata.get('author', 'PeP et al. e.V.'),
-                metadata.get('author_email', 'kontakt@pep-dortmund.org'),
-            ),
-            recipient.email,
-            mail.as_string(),
-        )
+        send_message(recipient, template, metadata, mail_server)
 
 
 if __name__ == '__main__':
