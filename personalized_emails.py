@@ -9,16 +9,21 @@ Options:
     -c <config>, --config=<config>  config-file [default: config.cfg]
 '''
 
+import os
 import pandas as pd
 import jinja2
 import frontmatter
 import gfm
 import smtplib
+import mimetypes
 from docopt import docopt
 from configparser import RawConfigParser
 from getpass import getpass
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email.mime.image import MIMEImage
+from email import encoders
 
 
 def read_database(inputfile, **kwargs):
@@ -60,18 +65,47 @@ def setup_smtp_server(host, port, user, password=None):
 def build_mail(recipient, metadata, markdown, attachments=None):
     html = gfm.markdown(markdown)
 
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = metadata['subject']
-    msg['From'] = metadata.get('author', 'PeP et al. e.V.')
-    msg['To'] = recipient.email
+    mail = MIMEMultipart()
+    mail['Subject'] = metadata['subject']
+    mail['From'] = metadata.get('author', 'PeP et al. e.V.')
+    mail['To'] = recipient.email
 
+    msg = MIMEMultipart('alternative')
     plain_part = MIMEText(markdown, 'plain')
     html_part = MIMEText(html, 'html')
 
     msg.attach(plain_part)
     msg.attach(html_part)
 
-    return msg
+    mail.attach(msg)
+
+    for attachment in attachments:
+        filename = os.path.basename(attachment)
+        ctype, encoding = mimetypes.guess_type(attachment)
+        if ctype is None or encoding is not None:
+            # No guess could be made, or the file is encoded (compressed), so
+            # use a generic bag-of-bits type.
+            ctype = 'application/octet-stream'
+
+        maintype, subtype = ctype.split('/', 1)
+        if maintype == 'text':
+            with open(attachment) as fp:
+                # Note: we should handle calculating the charset
+                att = MIMEText(fp.read(), _subtype=subtype)
+        elif maintype == 'image':
+            with open(attachment, 'rb') as fp:
+                att = MIMEImage(fp.read(), _subtype=subtype)
+        else:
+            with open(attachment, 'rb') as fp:
+                att = MIMEBase(maintype, subtype)
+                att.set_payload(fp.read())
+            # Encode the payload using Base64
+            encoders.encode_base64(att)
+        # Set the filename parameter
+        att.add_header('Content-Disposition', 'attachment', filename=filename)
+        mail.attach(att)
+
+    return mail
 
 
 def main():
