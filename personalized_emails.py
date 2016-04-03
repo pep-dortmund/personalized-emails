@@ -105,7 +105,7 @@ def build_mail(recipient, metadata, markdown, attachments=None):
 
 
 def send_message(recipient, metadata, template, mail_server):
-    markdown = template.render(recipient=recipient)
+    markdown = template.render(recipient=recipient, metadata=metadata)
     attachments = metadata.get('attachments')
     mail = build_mail(recipient, metadata, markdown, attachments)
 
@@ -135,7 +135,7 @@ def main():
     template, metadata = parse_template(args['<template>'])
 
     for recipient in database.itertuples():
-        send_message(recipient, template, metadata, mail_server)
+        send_message(recipient, metadata, template, mail_server)
 
 
 if __name__ == '__main__':
