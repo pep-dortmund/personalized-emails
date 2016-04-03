@@ -27,15 +27,6 @@ from email import encoders
 
 
 def read_database(inputfile, **kwargs):
-
-    if inputfile.endswith('.csv'):
-        database = pd.read_csv(
-            inputfile,
-            delimiter='|',
-            dtype={'Kontonummer': str, 'BLZ': str, 'Abschlussjahrgang': str},
-        )
-        return database
-
     if inputfile.endswith('.json'):
         database = pd.read_json(
             inputfile,
