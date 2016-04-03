@@ -17,6 +17,8 @@ import smtplib
 from docopt import docopt
 from configparser import RawConfigParser
 from getpass import getpass
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 
 def read_database(inputfile, **kwargs):
@@ -52,6 +54,25 @@ def setup_smtp_server(host, port, user, password=None):
         password = getpass('Please enter your mail password: ')
     smtp.login(user, password)
 
+    return smtp
+
+
+def build_mail(recipient, metadata, markdown, attachments=None):
+    html = gfm.markdown(markdown)
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = metadata['subject']
+    msg['From'] = metadata.get('author', 'PeP et al. e.V.')
+    msg['To'] = recipient.email
+
+    plain_part = MIMEText(markdown, 'plain')
+    html_part = MIMEText(html, 'html')
+
+    msg.attach(plain_part)
+    msg.attach(html_part)
+
+    return msg
+
 
 def main():
     args = docopt(__doc__, version='PeP et Al. emails v0.0.1')
@@ -67,8 +88,17 @@ def main():
     template, metadata = parse_template(args['<template>'])
 
     for recipient in database.itertuples():
-        content = template.render(recipient=recipient)
-        html = gfm.markdown(content)
+
+        markdown = template.render(recipient=recipient)
+
+        attachments = metadata.get('attachments')
+        mail = build_mail(recipient, metadata, markdown, attachments)
+
+        mail_server.sendmail(
+            metadata.get('author_email', 'kontakt@pep-dortmund.org'),
+            recipient.email,
+            mail.as_string(),
+        )
 
 
 if __name__ == '__main__':

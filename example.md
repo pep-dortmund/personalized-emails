@@ -1,6 +1,7 @@
 ---
 subject: Hello
 author: Maximilian Nöthe
+author_email: maximilian.noethe@tu-dortmund.de
 ---
 
 {% if recipient.sex == "male" %}Lieber{% else %}Liebe{% endif %} {{ recipient.firstname }},
