@@ -7,7 +7,8 @@ Usage:
 
 Options:
     -c <config>, --config=<config>     config-file [default: config.cfg]
-    -b <backend>, --backend=<backend>  mailing backend [default: smtplib]
+    -b <backend>, --backend=<backend>  mailing backend. If not given, the first backend
+                                       description found in the configfile is used.
 '''
 from docopt import docopt
 from configparser import RawConfigParser
@@ -28,12 +29,16 @@ def main():
     if not successful_files:
         raise IOError('Could not read config-file')
 
-    if args['--backend'] == 'smtplib':
+    backend = args['--backend'] or config.sections()[0]
+
+    if backend == 'smtplib':
         from .backends import SMTPLibMailer
         mailer = SMTPLibMailer(**config['smtplib'])
-    elif args['--backend'] == 'mailgun':
+
+    elif backend == 'mailgun':
         from .backends import MailgunMailer
         mailer = MailgunMailer(**config['mailgun'])
+
     else:
         raise ValueError('Unsupported backend: {}'.format(args['--backend']))
 

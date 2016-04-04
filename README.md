@@ -84,13 +84,15 @@ We currently support two backends:
 * smtp via the python standard library modules `smtplib` and `email`
 * mailgun via `requests`
 
-`smtp` is the default.
-
 The tool will look for a config.cfg or
 you set the path of the configfile using the `-c /path/to/config/file` option.
 
+If no backend is specified via the `-b` command line option,
+the first backend found in the config file is used.
+
 ### smtp
 
+If you want to use `smtplib`, put this into your config file:
 ```
 [smtplib]
 host: ...
@@ -102,10 +104,9 @@ You can also provide a `password`, if not, you will be asked for it.
 
 ### Mailgun
 
-If you want to use Mailgun, put this into your config file:
+If you want to use `mailgun`, put this into your config file:
 ```
 [mailgun]
 domain: ...
 authkey: ...
 ```
-And start `jinjamail` with `-b mailgun`
