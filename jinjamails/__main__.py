@@ -16,7 +16,6 @@ import gfm
 
 from . import read_database
 from . import parse_template
-from .backends import SMTPLibMailer
 
 
 def main():
@@ -30,7 +29,11 @@ def main():
         raise IOError('Could not read config-file')
 
     if args['--backend'] == 'smtplib':
-        mailer = SMTPLibMailer(**config['smtp'])
+        from .backends import SMTPLibMailer
+        mailer = SMTPLibMailer(**config['smtplib'])
+    elif args['--backend'] == 'mailgun':
+        from .backends import MailgunMailer
+        mailer = MailgunMailer(**config['mailgun'])
     else:
         raise ValueError('Unsupported backend: {}'.format(args['--backend']))
 
