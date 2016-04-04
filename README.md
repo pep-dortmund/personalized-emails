@@ -46,7 +46,7 @@ To access an element, you can use:
 For more possibilities, have a look into the `jinja2` [docs](http://jinja.pocoo.org/).
 
 
-### metadate: subject, author, ...
+### metadata: subject, author, ...
 Metadata is given in a `yaml` header on top of the template:
 
 ```
@@ -109,4 +109,3 @@ domain: ...
 authkey: ...
 ```
 And start `jinjamail` with `-b mailgun`
-
